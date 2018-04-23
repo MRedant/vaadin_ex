@@ -9,10 +9,8 @@ import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.EventListener;
 import java.util.List;
 
-import static com.switchfully.vaadin.domain.Accomodation.AccomodationBuilder.accomodation;
 import static java.util.stream.Collectors.toList;
 
 public class AccomodationAdmin extends CustomComponent {
@@ -22,8 +20,6 @@ public class AccomodationAdmin extends CustomComponent {
     private AccomodationService accomodationService;
     private CityService cityService;
     private TextField filter;
-
-
 
     @Autowired
     public AccomodationAdmin(AccomodationService accomodationService, CityService cityService) {
@@ -38,19 +34,30 @@ public class AccomodationAdmin extends CustomComponent {
         EditAccomodationForm editAccomodationForm = new EditAccomodationForm(this, cityService, accomodationService);
         editAccomodationForm.setVisible(false);
         // TODO Exercise 5: Add a 'New Accomodation' button.
-        Button addNewAccomodationButton = new Button("Add new accomodation");
-        addNewAccomodationButton.addClickListener(click-> editAccomodationForm.setVisible(true));
+        Button addNewAccomodationButton = new Button("Add new accommodation");
+        addNewAccomodationButton.addClickListener(click-> {
+            grid.deselectAll();
+            editAccomodationForm.setVisible(true);
+        });
         // TODO Exercise 5: When selecting an accomodation in the grid, load it in the EditAccomodationForm to update it.
-
+        grid.addSelectionListener(event -> {
+            if (event.getSelected().isEmpty()) {
+                Accomodation accomodation = Accomodation.AccomodationBuilder.accomodation().build();
+                editAccomodationForm.setAccomodation(accomodation);
+                editAccomodationForm.setVisible(false);
+            } else {
+                Accomodation accomodation = (Accomodation) event.getSelected().iterator().next();
+                editAccomodationForm.setAccomodation(accomodation);
+                editAccomodationForm.setVisible(true);
+            }
+        });
         // TODO Exercise 5: Add a 'Delete' button to the form to delete an accomodation.
 
         // TODO Exercise 5: Add a 'Cancel' button to the form to close the form.
 
         // TODO Exercise 5 (Extra): Add ta DateField for creationDate to the form.
 
-        HorizontalLayout toolbar = new HorizontalLayout(filtering);
-        toolbar.setSpacing(true);
-        HorizontalLayout aboveTable = new HorizontalLayout(toolbar, addNewAccomodationButton);
+        HorizontalLayout aboveTable = new HorizontalLayout(filtering, addNewAccomodationButton);
         aboveTable.setSpacing(true);
         VerticalLayout mainLayout = new VerticalLayout(aboveTable, new HorizontalLayout(grid,editAccomodationForm));
         mainLayout.setMargin(true);
@@ -92,6 +99,11 @@ public class AccomodationAdmin extends CustomComponent {
         grid.getColumn("city.name").setHeaderCaption("City");
 
         grid.setContainerDataSource(container);
+    }
+
+    public void updateList() {
+        filter.clear();
+        populateGrid(accomodationService.getAccomodations());
     }
 
 }

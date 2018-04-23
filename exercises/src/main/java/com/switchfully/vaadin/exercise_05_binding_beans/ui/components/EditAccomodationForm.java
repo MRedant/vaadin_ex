@@ -12,12 +12,27 @@ import com.vaadin.ui.*;
 
 import java.util.EnumSet;
 
+import static com.switchfully.vaadin.domain.Accomodation.AccomodationBuilder.cloneAccomodation;
+
 public class EditAccomodationForm extends FormLayout {
+
+    private final BeanFieldGroup<Accomodation> binder = new BeanFieldGroup<Accomodation>(Accomodation.class);
 
     private final AccomodationAdmin admin;
     private AccomodationService accomodationService;
     private final CityService cityService;
-    private Accomodation accomodation;
+    private Accomodation accomodation = Accomodation.AccomodationBuilder.accomodation().build();
+
+    private final BeanItemContainer<String> nameContainer;
+    private TextField name;
+    private BeanItemContainer<City> cityContainer;
+    private ComboBox cityField;
+    private BeanItemContainer<StarRating> ratingContainer;
+    private ComboBox ratingField;
+    private Button deleteButton = new Button("Delete");
+    private Button saveButton = new Button("Save");
+    private Button cancelButton = new Button("Cancel");
+    private HorizontalLayout buttons;
 
     public EditAccomodationForm(AccomodationAdmin accomodationAdmin, CityService cityService, AccomodationService accomodationService) {
 
@@ -25,60 +40,73 @@ public class EditAccomodationForm extends FormLayout {
         this.accomodationService = accomodationService;
         this.cityService = cityService;
 
-        final BeanFieldGroup<Accomodation> binder = new BeanFieldGroup<Accomodation>(Accomodation.class);
         binder.setItemDataSource(accomodation);
 
-        TextField name = new TextField("Name");
+        nameContainer = new BeanItemContainer<>(String.class);
+        name = new TextField("Name");
+        name.setWidth("100%");
         name.setNullRepresentation("");
-        Component nameComponent = binder.buildAndBind("Name", "name");
+        binder.bind(name, "name");
 
-        BeanItemContainer<City> cityContainer = new BeanItemContainer<>(City.class, cityService.getCities());
-        ComboBox cityField = new ComboBox("City", cityContainer);
+
+        cityContainer = new BeanItemContainer<>(City.class, cityService.getCities());
+        cityField = new ComboBox("City", cityContainer);
         cityField.setItemCaptionPropertyId("name");
         cityField.setNullSelectionAllowed(false);
         binder.bind(cityField, "city");
 
-        BeanItemContainer<StarRating> ratingContainer = new BeanItemContainer<>(StarRating.class);
-        ComboBox ratingField = new ComboBox("Rating", ratingContainer);
+        ratingContainer = new BeanItemContainer<>(StarRating.class);
         ratingContainer.addAll(EnumSet.allOf(StarRating.class));
+        ratingField = new ComboBox("Rating", ratingContainer);
         ratingField.setNullSelectionAllowed(false);
-        binder.bind(ratingField,"starRating");
+        binder.bind(ratingField, "starRating");
 
-        Button saveButton = new Button("Save");
-        saveButton.addClickListener(clickEvent ->
-        {
-            try {
-                binder.commit();
-            } catch (FieldGroup.CommitException e) {
-                e.printStackTrace();
-            }
-            boolean saved = accomodationService.save(accomodation);
+        saveButton.addClickListener(clickEvent -> save());
 
-            if (saved) {
-                Notification.show("Accomodation Saved", Notification.Type.HUMANIZED_MESSAGE);
-            }
-        });
-
-        Button deleteButton = new Button("Delete");
+        deleteButton.addClickListener(clickEvent -> delete());
         deleteButton.setDescription("Based on the 'Name' of the accommodation");
-        deleteButton.addClickListener(clickEvent -> accomodationService.delete(
-                accomodationService.findAccomodations(nameComponent.getCaption()).stream()
-                        .findFirst()
-                        .orElse(null)
-                        .getId()));
 
-        Button cancelButton = new Button("Cancel");
-//        cancelButton.addClickListener(this.setVisible(false));
+        cancelButton.addClickListener(clickEvent -> cancel());
 
-        HorizontalLayout buttons = new HorizontalLayout(saveButton, deleteButton, cancelButton);
+        buttons = new HorizontalLayout(saveButton, deleteButton, cancelButton);
         buttons.setSpacing(true);
 
-        this.addComponent(nameComponent);
+        this.addComponent(name);
         this.addComponent(cityField);
         this.addComponent(binder.buildAndBind("Number of rooms", "numberOfRooms"));
         this.addComponent(ratingField);
         this.addComponent(buttons);
+
     }
 
+    public void setAccomodation(Accomodation accomodation2) {
+        this.accomodation = cloneAccomodation(accomodation2).build();
+        binder.setItemDataSource(accomodation);
+    }
+
+    private void cancel() {
+        setVisible(false);
+    }
+
+    private void save() {
+        try {
+            binder.commit();
+        } catch (FieldGroup.CommitException e) {
+            e.printStackTrace();
+        }
+        boolean saved = accomodationService.save(accomodation);
+
+        if (saved) {
+            Notification.show("Accommodation Saved", Notification.Type.HUMANIZED_MESSAGE);
+        }
+        admin.updateList();
+        setVisible(false);
+    }
+
+    private void delete() {
+        accomodationService.delete(accomodation.getId());
+        admin.updateList();
+        setVisible(false);
+    }
 
 }
