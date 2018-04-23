@@ -23,6 +23,8 @@ public class AccomodationAdmin extends CustomComponent {
     private CityService cityService;
     private TextField filter;
 
+
+
     @Autowired
     public AccomodationAdmin(AccomodationService accomodationService, CityService cityService) {
         this.accomodationService = accomodationService;
@@ -33,7 +35,7 @@ public class AccomodationAdmin extends CustomComponent {
         CssLayout filtering = createFilterComponent(accomodations);
 
         // TODO Exercise 5: Create an EditAccomodationForm and add it to the right of the grid to add a new accomodation.
-        EditAccomodationForm editAccomodationForm = new EditAccomodationForm(cityService, accomodationService);
+        EditAccomodationForm editAccomodationForm = new EditAccomodationForm(this, cityService, accomodationService);
         editAccomodationForm.setVisible(false);
         // TODO Exercise 5: Add a 'New Accomodation' button.
         Button addNewAccomodationButton = new Button("Add new accomodation");

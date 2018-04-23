@@ -3,16 +3,11 @@ package com.switchfully.vaadin.exercise_04_field_binding_simple.ui;
 import com.vaadin.annotations.Theme;
 import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
-import com.vaadin.event.FieldEvents;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.*;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import static com.vaadin.ui.AbstractTextField.TextChangeEventMode.EAGER;
-import static com.vaadin.ui.AbstractTextField.TextChangeEventMode.LAZY;
 
 @SpringUI
 @Theme("valo")

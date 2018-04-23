@@ -11,47 +11,38 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.ui.*;
 
 import java.util.EnumSet;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class EditAccomodationForm extends FormLayout {
 
-
+    private final AccomodationAdmin admin;
+    private AccomodationService accomodationService;
+    private final CityService cityService;
     private Accomodation accomodation;
 
-    public EditAccomodationForm(CityService cityService, AccomodationService accomodationService) {
+    public EditAccomodationForm(AccomodationAdmin accomodationAdmin, CityService cityService, AccomodationService accomodationService) {
 
-        List<String> cityList = cityService.getCities().stream()
-                .map(City::getName)
-                .collect(Collectors.toList());
-
-        this.accomodation = Accomodation.AccomodationBuilder.accomodation().build();
+        this.admin = accomodationAdmin;
+        this.accomodationService = accomodationService;
+        this.cityService = cityService;
 
         final BeanFieldGroup<Accomodation> binder = new BeanFieldGroup<Accomodation>(Accomodation.class);
         binder.setItemDataSource(accomodation);
 
         TextField name = new TextField("Name");
         name.setNullRepresentation("");
-
         Component nameComponent = binder.buildAndBind("Name", "name");
-
-        this.addComponent(nameComponent);
 
         BeanItemContainer<City> cityContainer = new BeanItemContainer<>(City.class, cityService.getCities());
         ComboBox cityField = new ComboBox("City", cityContainer);
         cityField.setItemCaptionPropertyId("name");
         cityField.setNullSelectionAllowed(false);
         binder.bind(cityField, "city");
-        this.addComponent(cityField);
-
-        this.addComponent(binder.buildAndBind("Number of rooms", "numberOfRooms"));
 
         BeanItemContainer<StarRating> ratingContainer = new BeanItemContainer<>(StarRating.class);
-        ratingContainer.addAll(EnumSet.allOf(StarRating.class));
         ComboBox ratingField = new ComboBox("Rating", ratingContainer);
+        ratingContainer.addAll(EnumSet.allOf(StarRating.class));
         ratingField.setNullSelectionAllowed(false);
         binder.bind(ratingField,"starRating");
-        this.addComponent(ratingField);
 
         Button saveButton = new Button("Save");
         saveButton.addClickListener(clickEvent ->
@@ -81,7 +72,13 @@ public class EditAccomodationForm extends FormLayout {
 
         HorizontalLayout buttons = new HorizontalLayout(saveButton, deleteButton, cancelButton);
         buttons.setSpacing(true);
+
+        this.addComponent(nameComponent);
+        this.addComponent(cityField);
+        this.addComponent(binder.buildAndBind("Number of rooms", "numberOfRooms"));
+        this.addComponent(ratingField);
         this.addComponent(buttons);
     }
+
 
 }
