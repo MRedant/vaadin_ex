@@ -7,7 +7,9 @@ import com.vaadin.data.util.BeanItemContainer;
 import com.vaadin.server.FontAwesome;
 import com.vaadin.ui.*;
 import com.vaadin.ui.themes.ValoTheme;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.EventListener;
 import java.util.List;
 
 import static com.switchfully.vaadin.domain.Accomodation.AccomodationBuilder.accomodation;
@@ -21,6 +23,7 @@ public class AccomodationAdmin extends CustomComponent {
     private CityService cityService;
     private TextField filter;
 
+    @Autowired
     public AccomodationAdmin(AccomodationService accomodationService, CityService cityService) {
         this.accomodationService = accomodationService;
         this.cityService = cityService;
@@ -29,17 +32,25 @@ public class AccomodationAdmin extends CustomComponent {
         populateGrid(accomodations);
         CssLayout filtering = createFilterComponent(accomodations);
 
-        // TODO Exercise 5: Add a 'New Accomodation' button.
         // TODO Exercise 5: Create an EditAccomodationForm and add it to the right of the grid to add a new accomodation.
+        EditAccomodationForm editAccomodationForm = new EditAccomodationForm(cityService, accomodationService);
+        editAccomodationForm.setVisible(false);
+        // TODO Exercise 5: Add a 'New Accomodation' button.
+        Button addNewAccomodationButton = new Button("Add new accomodation");
+        addNewAccomodationButton.addClickListener(click-> editAccomodationForm.setVisible(true));
         // TODO Exercise 5: When selecting an accomodation in the grid, load it in the EditAccomodationForm to update it.
+
         // TODO Exercise 5: Add a 'Delete' button to the form to delete an accomodation.
+
         // TODO Exercise 5: Add a 'Cancel' button to the form to close the form.
+
         // TODO Exercise 5 (Extra): Add ta DateField for creationDate to the form.
 
         HorizontalLayout toolbar = new HorizontalLayout(filtering);
         toolbar.setSpacing(true);
-
-        VerticalLayout mainLayout = new VerticalLayout(toolbar, grid);
+        HorizontalLayout aboveTable = new HorizontalLayout(toolbar, addNewAccomodationButton);
+        aboveTable.setSpacing(true);
+        VerticalLayout mainLayout = new VerticalLayout(aboveTable, new HorizontalLayout(grid,editAccomodationForm));
         mainLayout.setMargin(true);
         setCompositionRoot(mainLayout);
     }

@@ -51,12 +51,14 @@ public class AccomodationService {
         getAccomodation(accomodationId).addBooking(booking);
     }
 
-    public void save(Accomodation accomodation) {
+    public boolean save(Accomodation accomodation) {
+        boolean saved = false;
         if (!accomodation.isPersisted()) {
             this.accomodations.add(
                     cloneAccomodation(accomodation)
                     .withId()
                     .build());
+            saved = true;
         } else {
             Accomodation accomodationToUpdate = getAccomodation(accomodation.getId());
 
@@ -65,6 +67,7 @@ public class AccomodationService {
             accomodationToUpdate.setNumberOfRooms(accomodation.getNumberOfRooms());
             accomodationToUpdate.setStarRating(accomodation.getStarRating());
         }
+        return saved;
     }
 
     private void initData() {
